@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Is This an ACT? | TechInHSR Decision Tool</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap');
+  :root {
+    --teal:#0D4F5C;--teal-mid:#1A7A8A;--teal-light:#E8F4F7;--teal-pale:#F2F9FB;
+    --gold:#C9A84C;--gold-light:#FDF6E3;
+    --red:#C0392B;--red-light:#FDEDEC;
+    --amber:#E67E22;--amber-light:#FEF9E7;
+    --green:#1E7E4A;--green-light:#E9F7EE;
+    --gray-dark:#2C3E50;--gray-mid:#5D6D7E;--gray-light:#F4F6F7;
+    --white:#FFFFFF;--border:#D5DCE0;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:'DM Sans',sans-serif;background:var(--teal-pale);color:var(--gray-dark);min-height:100vh;}
+  .header{background:var(--teal);padding:0;position:relative;overflow:hidden;}
+  .header-inner{max-width:880px;margin:0 auto;padding:36px 32px 28px;position:relative;z-index:1;}
+  .header-eyebrow{font-size:11px;letter-spacing:2.5px;text-transform:uppercase;color:var(--gold);font-weight:600;margin-bottom:10px;}
+  .header h1{font-family:'DM Serif Display',serif;font-size:32px;color:var(--white);line-height:1.2;margin-bottom:8px;}
+  .header-sub{font-size:14px;color:#A8CDD4;line-height:1.5;max-width:620px;}
+  .header-accent{position:absolute;right:0;top:0;bottom:0;width:6px;background:var(--gold);}
+  .progress-wrap{background:var(--teal-mid);padding:10px 0;}
+  .progress-inner{max-width:880px;margin:0 auto;padding:0 32px;display:flex;align-items:center;gap:12px;}
+  .progress-label{font-size:11px;color:#A8CDD4;white-space:nowrap;font-weight:500;letter-spacing:0.5px;}
+  .progress-bar-bg{flex:1;height:4px;background:rgba(255,255,255,0.15);border-radius:2px;}
+  .progress-bar-fill{height:4px;background:var(--gold);border-radius:2px;transition:width 0.4s ease;}
+  .progress-pct{font-size:11px;color:var(--gold);font-weight:600;width:32px;text-align:right;}
+  .main{max-width:880px;margin:0 auto;padding:32px 32px 60px;}
+  .card{background:var(--white);border-radius:10px;border:1px solid var(--border);box-shadow:0 2px 12px rgba(13,79,92,0.07);padding:32px 36px;margin-bottom:20px;animation:fadeUp 0.3s ease;}
+  @keyframes fadeUp{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
+  .stage-badge{display:inline-flex;align-items:center;gap:6px;background:var(--teal);color:var(--gold);font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;padding:4px 10px;border-radius:3px;margin-bottom:14px;}
+  .question-text{font-family:'DM Serif Display',serif;font-size:22px;color:var(--teal);line-height:1.35;margin-bottom:10px;}
+  .question-sub{font-size:13.5px;color:var(--gray-mid);line-height:1.6;margin-bottom:18px;border-left:3px solid var(--teal-light);padding-left:14px;}
+  .reg-cite{font-size:11px;color:var(--teal-mid);font-style:italic;margin-bottom:20px;padding:6px 10px;background:var(--teal-light);border-radius:4px;display:inline-block;}
+  .choices{display:flex;flex-direction:column;gap:10px;margin-bottom:20px;}
+  .choice-btn{display:flex;align-items:flex-start;gap:14px;padding:16px 18px;border:1.5px solid var(--border);border-radius:8px;background:var(--white);cursor:pointer;text-align:left;transition:all 0.18s;font-family:'DM Sans',sans-serif;width:100%;}
+  .choice-btn:hover{border-color:var(--teal-mid);background:var(--teal-pale);transform:translateX(3px);}
+  .choice-btn.yes-style:hover{border-color:var(--green);background:var(--green-light);}
+  .choice-btn.no-style:hover{border-color:var(--amber);background:var(--amber-light);}
+  .choice-btn.warn-style:hover{border-color:var(--red);background:var(--red-light);}
+  .choice-btn.info-style:hover{border-color:var(--teal);background:var(--teal-light);}
+  .choice-icon{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0;margin-top:1px;}
+  .yes-icon{background:var(--green-light);color:var(--green);}
+  .no-icon{background:var(--amber-light);color:var(--amber);}
+  .warn-icon{background:var(--red-light);color:var(--red);}
+  .q-icon{background:var(--teal-light);color:var(--teal);}
+  .info-icon{background:var(--teal-light);color:var(--teal-mid);}
+  .choice-label{font-size:14.5px;font-weight:600;color:var(--gray-dark);margin-bottom:3px;}
+  .choice-desc{font-size:12.5px;color:var(--gray-mid);line-height:1.5;}
+  .choice-warn{font-size:12px;color:var(--red);margin-top:6px;line-height:1.4;}
+  /* mad-lib */
+  .madlib-grid{display:grid;gap:14px;margin-bottom:20px;}
+  .field-group{margin-bottom:0;}
+  .field-label{font-size:11.5px;font-weight:600;color:var(--teal);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:4px;display:block;}
+  .field-hint{font-size:11.5px;color:var(--gray-mid);margin-bottom:5px;font-style:italic;line-height:1.4;}
+  .text-field{width:100%;padding:11px 14px;border:1.5px solid var(--border);border-radius:7px;font-family:'DM Sans',sans-serif;font-size:14px;color:var(--gray-dark);transition:border-color 0.2s;background:var(--white);resize:vertical;}
+  .text-field:focus{outline:none;border-color:var(--teal-mid);}
+  .madlib-preview{background:var(--teal-pale);border:1px solid var(--teal-light);border-radius:8px;padding:14px 18px;font-size:13.5px;color:var(--teal);line-height:1.8;margin-bottom:18px;}
+  .madlib-preview em{color:var(--gray-mid);font-style:italic;}
+  /* examples */
+  .example-wrap{margin-top:14px;}
+  .example-toggle{display:flex;align-items:center;gap:8px;background:none;border:1px dashed var(--gold);color:var(--gold);font-family:'DM Sans',sans-serif;font-size:12.5px;font-weight:600;cursor:pointer;padding:7px 13px;border-radius:5px;transition:all 0.18s;}
+  .example-toggle:hover{background:var(--gold-light);}
+  .example-toggle .arrow{transition:transform 0.2s;font-size:10px;display:inline-block;}
+  .example-toggle.open .arrow{transform:rotate(90deg);}
+  .example-body{display:none;margin-top:10px;padding:16px 18px;background:var(--gold-light);border-left:3px solid var(--gold);border-radius:0 6px 6px 6px;animation:fadeUp 0.2s ease;}
+  .example-body.open{display:block;}
+  .example-body.green-ex{background:var(--green-light);border-left-color:var(--green);}
+  .example-title{font-size:11px;font-weight:700;color:var(--teal);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:7px;}
+  .example-scenario{font-size:13px;color:var(--gray-dark);line-height:1.6;margin-bottom:8px;}
+  .example-key{font-size:12px;color:var(--teal-mid);font-style:italic;line-height:1.5;}
+  /* besh */
+  .besh-warning{background:var(--red-light);border:1.5px solid var(--red);border-radius:8px;padding:16px 18px;margin-bottom:20px;}
+  .besh-warning-title{font-weight:700;color:var(--red);font-size:13px;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px;}
+  .besh-warning p{font-size:13px;color:#7B241C;line-height:1.6;}
+  /* info box */
+  .info-box{background:var(--teal-light);border:1px solid var(--teal-mid);border-radius:8px;padding:14px 18px;margin-bottom:18px;font-size:13px;color:var(--teal);line-height:1.6;}
+  .info-box strong{display:block;margin-bottom:4px;font-size:11px;text-transform:uppercase;letter-spacing:0.5px;}
+  /* check list */
+  .check-list{list-style:none;margin-bottom:18px;}
+  .check-list li{display:flex;gap:10px;align-items:flex-start;padding:9px 0;border-bottom:1px solid var(--gray-light);font-size:13px;color:var(--gray-dark);line-height:1.5;}
+  .check-list li:last-child{border-bottom:none;}
+  .check-num{width:22px;height:22px;border-radius:50%;background:var(--teal);color:white;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;}
+  /* nav */
+  .nav-row{display:flex;gap:10px;margin-top:6px;flex-wrap:wrap;}
+  .btn-back{padding:10px 20px;border:1.5px solid var(--border);background:var(--white);border-radius:7px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;color:var(--gray-mid);cursor:pointer;transition:all 0.18s;}
+  .btn-back:hover{border-color:var(--teal);color:var(--teal);}
+  .btn-restart{padding:10px 20px;border:1.5px solid var(--teal);background:var(--white);border-radius:7px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;color:var(--teal);cursor:pointer;transition:all 0.18s;}
+  .btn-restart:hover{background:var(--teal);color:var(--white);}
+  /* result */
+  .result-banner{border-radius:10px;padding:24px 28px;margin-bottom:20px;display:flex;align-items:flex-start;gap:16px;}
+  .result-banner.act{background:var(--red-light);border:2px solid var(--red);}
+  .result-banner.likely-act{background:var(--amber-light);border:2px solid var(--amber);}
+  .result-banner.not-act{background:var(--green-light);border:2px solid var(--green);}
+  .result-banner.indeterminate{background:var(--teal-light);border:2px solid var(--teal-mid);}
+  .result-icon{font-size:32px;flex-shrink:0;}
+  .result-verdict{font-family:'DM Serif Display',serif;font-size:22px;margin-bottom:4px;}
+  .result-banner.act .result-verdict{color:var(--red);}
+  .result-banner.likely-act .result-verdict{color:var(--amber);}
+  .result-banner.not-act .result-verdict{color:var(--green);}
+  .result-banner.indeterminate .result-verdict{color:var(--teal);}
+  .result-desc{font-size:13.5px;color:var(--gray-dark);line-height:1.6;}
+  /* memo */
+  .memo-card{background:var(--white);border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:20px;}
+  .memo-header{background:var(--teal);color:var(--white);padding:14px 24px;}
+  .memo-header-title{font-family:'DM Serif Display',serif;font-size:17px;}
+  .memo-header-sub{font-size:11px;color:#A8CDD4;margin-top:2px;}
+  .memo-body{padding:24px;}
+  .memo-section{margin-bottom:20px;}
+  .memo-section:last-child{margin-bottom:0;}
+  .memo-section-title{font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--teal);border-bottom:1px solid var(--teal-light);padding-bottom:5px;margin-bottom:10px;}
+  .memo-field{margin-bottom:8px;}
+  .memo-field-label{font-size:11px;color:var(--gray-mid);font-weight:600;margin-bottom:2px;}
+  .memo-field-val{font-size:13px;color:var(--gray-dark);line-height:1.5;}
+  .memo-q-row{display:grid;grid-template-columns:32px 1fr auto;gap:10px;align-items:start;padding:10px 0;border-bottom:1px solid var(--gray-light);}
+  .memo-q-row:last-child{border-bottom:none;}
+  .memo-q-num{width:24px;height:24px;border-radius:50%;background:var(--teal);color:white;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;}
+  .memo-q-text{font-size:12.5px;color:var(--gray-dark);line-height:1.5;}
+  .memo-q-ans{font-size:12px;font-weight:700;white-space:nowrap;}
+  .ans-yes{color:var(--red);}
+  .ans-no{color:var(--green);}
+  .ans-partial{color:var(--amber);}
+  .next-steps-list{list-style:none;}
+  .next-steps-list li{display:flex;gap:10px;align-items:flex-start;padding:7px 0;font-size:13px;color:var(--gray-dark);line-height:1.5;border-bottom:1px solid var(--gray-light);}
+  .next-steps-list li:last-child{border-bottom:none;}
+  .ns-bullet{width:20px;height:20px;border-radius:50%;background:var(--teal);color:white;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;}
+  .print-btn{display:flex;align-items:center;gap:8px;background:var(--teal);color:var(--white);border:none;border-radius:7px;padding:12px 22px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;cursor:pointer;transition:all 0.18s;}
+  .print-btn:hover{background:var(--teal-mid);}
+  .disclaimer{background:var(--gold-light);border:1px solid var(--gold);border-radius:7px;padding:12px 16px;font-size:12px;color:#5D4E1A;line-height:1.6;margin-bottom:20px;}
+  .footer{background:var(--teal);color:#A8CDD4;text-align:center;padding:20px 32px;font-size:12px;line-height:1.8;}
+  .footer a{color:var(--gold);text-decoration:none;}
+  .footer strong{color:var(--white);}
+  @media print{.header-accent,.progress-wrap,.nav-row,.print-btn,.choices,.example-wrap,.btn-back,.btn-restart{display:none!important;}body{background:white;}.card{box-shadow:none;border:1px solid #ccc;}.main{padding:0;}}
+  @media(max-width:600px){.header h1{font-size:24px;}.main{padding:16px;}.card{padding:20px;}.memo-q-row{grid-template-columns:24px 1fr;}.memo-q-ans{grid-column:2;}}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-inner">
+    <div class="header-eyebrow">TechInHSR · ACT Determination Tool · 2026</div>
+    <h1>Is This an Applicable Clinical Trial?</h1>
+    <p class="header-sub">A structured decision tool for ClinicalTrials.gov registration determinations involving AI and Software as a Medical Device studies — for use by research compliance professionals.</p>
+  </div>
+  <div class="header-accent"></div>
+</div>
+<div class="progress-wrap">
+  <div class="progress-inner">
+    <span class="progress-label" id="progressLabel">Getting started</span>
+    <div class="progress-bar-bg"><div class="progress-bar-fill" id="progressFill" style="width:0%"></div></div>
+    <span class="progress-pct" id="progressPct">0%</span>
+  </div>
+</div>
+<div class="main" id="app"></div>
+<div class="footer">
+  <strong>Tamiko Eto, MA, CIP</strong> · TechInHSR LLC<br>
+  Licensed under <a href="#">CC BY-NC 4.0</a> · Not legal advice · IRB/compliance office makes final determination<br>
+  Regulatory citations current as of May 2026 · <a href="#">techinHSR.com</a>
+</div>
+
+<script>
+const app=document.getElementById('app');
+const STEPS=['intro','intake','nih_check','besh_warning','q1_iu','q1_dev','q1_unsure','q1_cds','q2','q3_site','q3_ide','result'];
+const STEP_LABELS={intro:'Introduction',intake:'Study information',nih_check:'Funding check',besh_warning:'BESH flag',q1_iu:'Q1 · Intended use',q1_dev:'Q1 · Device status',q1_unsure:'Q1 · Guided device check',q1_cds:'Q1 · CDS exemption',q2:'Q2 · Clinical evaluation',q3_site:'Q3 · US site',q3_ide:'Q3 · IDE category',result:'Determination'};
+
+function blankState(){return{step:'intro',history:[],a:{studyName:'',piName:'',institution:'',studyDesc:'',nihFunded:null,beshDesignated:null,toolName:'',toolFunction:'',toolInput:'',toolOutput:'',toolUser:'',toolPopulation:'',toolSetting:'',devicePathway:null,isDevice:null,cdsExemptionHolds:null,unsureApd:null,unsurePco:null,unsureCao:null,isEvaluation:null,usaSite:null,ideCategory:null},outcome:null};}
+let S=blankState();
+
+function go(step){S.history.push(S.step);S.step=step;render();}
+function back(){if(S.history.length){S.step=S.history.pop();render();}}
+function restart(){S=blankState();render();}
+window.go=go;window.back=back;window.restart=restart;
+
+function setProgress(step){
+  const idx=STEPS.indexOf(step);
+  const pct=idx<0?0:Math.round((idx/(STEPS.length-1))*100);
+  document.getElementById('progressFill').style.width=pct+'%';
+  document.getElementById('progressPct').textContent=pct+'%';
+  document.getElementById('progressLabel').textContent=STEP_LABELS[step]||'';
+}
+
+function exHTML(id,label,scenario,keyQ,green){
+  return`<div class="example-wrap">
+    <button class="example-toggle" onclick="toggleEx('${id}')"><span class="arrow">▶</span> See an example: ${label}</button>
+    <div class="example-body${green?' green-ex':''}" id="ex-${id}">
+      <div class="example-title">Example scenario</div>
+      <div class="example-scenario">${scenario}</div>
+      <div class="example-key">🔑 Key question: ${keyQ}</div>
+    </div>
+  </div>`;
+}
+window.toggleEx=id=>{const el=document.getElementById('ex-'+id);const btn=el.previousElementSibling;el.classList.toggle('open');btn.classList.toggle('open');};
+
+function mlPreview(a){
+  const f=v=>v?`<strong>${v}</strong>`:`<em>[not yet entered]</em>`;
+  return`<div class="madlib-preview">
+    <strong>${a.toolName||'[Tool name]'}</strong> is designed to ${f(a.toolFunction)}.
+    It takes ${f(a.toolInput)} as input and produces ${f(a.toolOutput)} as output.
+    Intended user: ${f(a.toolUser)}.
+    Intended population: ${f(a.toolPopulation)}.
+    Intended setting: ${f(a.toolSetting)}.
+  </div>`;
+}
+
+function render(){
+  setProgress(S.step);
+  ({intro:rIntro,intake:rIntake,nih_check:rNih,besh_warning:rBesh,q1_iu:rQ1IU,q1_dev:rQ1Dev,q1_unsure:rQ1Unsure,q1_cds:rQ1CDS,q2:rQ2,q3_site:rQ3Site,q3_ide:rQ3IDE,result:rResult}[S.step]||rIntro)();
+}
+
+/* INTRO */
+function rIntro(){app.innerHTML=`<div class="card">
+  <div class="stage-badge">ACT Determination Tool</div>
+  <div class="question-text">How to use this tool</div>
+  <div class="question-sub">This tool helps research compliance professionals determine whether a study involving AI or Software as a Medical Device (SaMD) constitutes an <strong>Applicable Clinical Trial (ACT)</strong> under FDAAA §801, triggering ClinicalTrials.gov registration and results reporting obligations.<br><br>Work through each question in order. At key points you can expand real-world examples. At the end the tool generates a printable documentation memo.</div>
+  <div class="disclaimer">⚠️ <strong>Not legal advice.</strong> This tool provides preliminary structured guidance. Your IRB, legal counsel, or regulatory affairs office makes the final determination. Citations current as of May 2026.</div>
+  <div class="choices"><button class="choice-btn info-style" onclick="go('intake')">
+    <div class="choice-icon q-icon">→</div><div><div class="choice-label">Begin assessment</div><div class="choice-desc">Work through the ACT determination framework for your study</div></div>
+  </button></div>
+</div>`;}
+
+/* INTAKE */
+function rIntake(){const a=S.a;app.innerHTML=`<div class="card">
+  <div class="stage-badge">Study Information</div>
+  <div class="question-text">Tell us about the study</div>
+  <div class="question-sub">This information will appear in your documentation memo. All fields are optional but recommended for a complete record.</div>
+  <div class="madlib-grid">
+    <div class="field-group"><label class="field-label">Study / Protocol Title</label><input class="text-field" id="fn" placeholder="e.g., AI-Assisted Sepsis Risk Stratification in the ICU" value="${a.studyName}"></div>
+    <div class="field-group"><label class="field-label">Principal Investigator</label><input class="text-field" id="fp" placeholder="Last name, First name" value="${a.piName}"></div>
+    <div class="field-group"><label class="field-label">Institution</label><input class="text-field" id="fi" placeholder="Sponsoring or lead institution" value="${a.institution}"></div>
+    <div class="field-group"><label class="field-label">Brief Study Description</label><textarea class="text-field" id="fd" rows="3" placeholder="Briefly describe the study design and the AI/software tool's role in it">${a.studyDesc}</textarea></div>
+  </div>
+  <div class="nav-row">
+    <button class="btn-back" onclick="back()">← Back</button>
+    <button class="choice-btn info-style" style="flex:1;max-width:260px;" onclick="saveIntake()">
+      <div class="choice-icon q-icon">→</div><div><div class="choice-label">Continue</div></div>
+    </button>
+  </div>
+</div>`;}
+window.saveIntake=()=>{S.a.studyName=document.getElementById('fn').value;S.a.piName=document.getElementById('fp').value;S.a.institution=document.getElementById('fi').value;S.a.studyDesc=document.getElementById('fd').value;go('nih_check');};
+
+/* NIH CHECK */
+function rNih(){app.innerHTML=`<div class="card">
+  <div class="stage-badge">Funding Check</div>
+  <div class="question-text">Is this study NIH-funded?</div>
+  <div class="question-sub">NIH's 2026 reclassification of Basic Experimental Studies with Humans (BESH) may affect how investigators have characterized this study — but that NIH classification does <strong>not</strong> override FDA device obligations.</div>
+  <div class="choices">
+    <button class="choice-btn yes-style" onclick="setNih(true)"><div class="choice-icon yes-icon">✓</div><div><div class="choice-label">Yes — NIH funded</div><div class="choice-desc">Study receives NIH grant or contract support</div></div></button>
+    <button class="choice-btn no-style" onclick="setNih(false)"><div class="choice-icon no-icon">→</div><div><div class="choice-label">No — not NIH funded</div><div class="choice-desc">Industry, institutional, foundation, or other funding</div></div></button>
+  </div>
+  <div class="nav-row"><button class="btn-back" onclick="back()">← Back</button></div>
+</div>`;}
+window.setNih=val=>{S.a.nihFunded=val;go(val?'besh_warning':'q1_iu');};
+
+/* BESH WARNING */
+function rBesh(){app.innerHTML=`<div class="card">
+  <div class="stage-badge">BESH Classification Check</div>
+  <div class="question-text">Has this study been classified as BESH by NIH?</div>
+  <div class="question-sub">Under NOT-OD-26-032 (effective May 25, 2026), Basic Experimental Studies with Humans are no longer considered clinical trials by NIH and do not require ClinicalTrials.gov registration under <em>NIH policy</em>. That classification does <strong>not</strong> override FDA device regulations.</div>
+  <div class="besh-warning"><div class="besh-warning-title">⚠️ Critical distinction</div><p>If the AI or software tool meets FDA's Software as a Medical Device definition, 21 CFR 812 (IDE regulations) and FDAAA §801 registration requirements apply <strong>regardless</strong> of the NIH BESH designation. FDA and NIH operate on entirely independent regulatory tracks.</p></div>
+  <div class="choices">
+    <button class="choice-btn warn-style" onclick="setBesh(true)"><div class="choice-icon warn-icon">!</div><div><div class="choice-label">Yes — designated as BESH</div><div class="choice-desc">PI or institution has characterized this as a Basic Experimental Study with Humans under NIH NOT-OD-26-032</div></div></button>
+    <button class="choice-btn no-style" onclick="setBesh(false)"><div class="choice-icon no-icon">→</div><div><div class="choice-label">No / Unsure</div><div class="choice-desc">Not designated BESH, or BESH status is unknown</div></div></button>
+  </div>
+  ${exHTML('besh1','BESH + industry co-investigator trap','A neuroscience PI designates an AI depression-monitoring study as BESH. The digital health company co-investigator holds data rights and has a regulatory submission in planning. NIH accepted the BESH framing. FDA evaluated the study based on how the data would be used — not the PI\'s characterization.','What rights does the industry partner hold to the trained model or dataset? Does the partner have a regulatory pathway underway?')}
+  <div class="nav-row"><button class="btn-back" onclick="back()">← Back</button></div>
+</div>`;}
+window.setBesh=val=>{S.a.beshDesignated=val;go('q1_iu');};
+
+/* Q1 INTENDED USE — MAD-LIB */
+function rQ1IU(){const a=S.a;app.innerHTML=`<div class="card">
+  <div class="stage-badge">Question 1 of 4 · Part A</div>
+  <div class="question-text">What is the intended use of this AI or software tool?</div>
+  <div class="question-sub"><strong>Intended use is not about how the tool is being used in your study.</strong> It describes what the tool was designed to do: its function, who it is for, what data it takes in, what it produces, and in what clinical scenario it is meant to operate. This statement is the regulatory anchor — it determines whether the tool is a medical device at all.</div>
+  <span class="reg-cite">21 U.S.C. §321(h) · 21 CFR 801.4 · FDA CDS Guidance (Jan 2025)</span>
+  <div class="madlib-grid">
+    <div class="field-group"><label class="field-label">Tool name or description</label><div class="field-hint">What is this tool called, or how would you describe it in one phrase?</div><input class="text-field" id="ml0" placeholder="e.g., SepsisAlert AI, unnamed ML risk classifier" value="${a.toolName}" oninput="updateML()"></div>
+    <div class="field-group"><label class="field-label">What the tool is designed to do</label><div class="field-hint">Its core function — does it detect, predict, classify, recommend, flag, score, or monitor something?</div><input class="text-field" id="ml1" placeholder="e.g., detect early signs of sepsis, prioritize radiology reads, predict 30-day readmission risk" value="${a.toolFunction}" oninput="updateML()"></div>
+    <div class="field-group"><label class="field-label">Input data</label><div class="field-hint">What data does the tool take in to produce its output? Be specific.</div><input class="text-field" id="ml2" placeholder="e.g., real-time EHR vitals and lab values, chest X-ray DICOM images, passive smartphone keystroke metadata" value="${a.toolInput}" oninput="updateML()"></div>
+    <div class="field-group"><label class="field-label">Output</label><div class="field-hint">What does the tool produce? A score, alert, recommendation, classification, probability, or other result?</div><input class="text-field" id="ml3" placeholder="e.g., a sepsis risk score with alert threshold, a prioritized worklist, a binary diagnosis flag" value="${a.toolOutput}" oninput="updateML()"></div>
+    <div class="field-group"><label class="field-label">Intended user</label><div class="field-hint">Who is designed to receive and act on this tool's output?</div><input class="text-field" id="ml4" placeholder="e.g., ICU attending physicians, radiologists, research coordinators" value="${a.toolUser}" oninput="updateML()"></div>
+    <div class="field-group"><label class="field-label">Intended subject population</label><div class="field-hint">Who or what does the tool apply to? What patient population or data type?</div><input class="text-field" id="ml5" placeholder="e.g., adult ICU patients, pediatric chest X-ray subjects, adults with major depressive disorder" value="${a.toolPopulation}" oninput="updateML()"></div>
+    <div class="field-group"><label class="field-label">Intended setting or scenario</label><div class="field-hint">Where and under what conditions is the tool designed to operate?</div><input class="text-field" id="ml6" placeholder="e.g., acute care hospital ICU, outpatient radiology, remote patient monitoring" value="${a.toolSetting}" oninput="updateML()"></div>
+  </div>
+  <div id="mlpreview">${mlPreview(a)}</div>
+  <div class="nav-row">
+    <button class="btn-back" onclick="back()">← Back</button>
+    <button class="choice-btn info-style" style="flex:1;max-width:280px;" onclick="saveML()">
+      <div class="choice-icon q-icon">→</div><div><div class="choice-label">Continue to device determination</div></div>
+    </button>
+  </div>
+</div>`;}
+window.updateML=()=>{const ids=['ml0','ml1','ml2','ml3','ml4','ml5','ml6'];const keys=['toolName','toolFunction','toolInput','toolOutput','toolUser','toolPopulation','toolSetting'];ids.forEach((id,i)=>{S.a[keys[i]]=document.getElementById(id).value;});document.getElementById('mlpreview').innerHTML=mlPreview(S.a);};
+window.saveML=()=>{window.updateML();go('q1_dev');};
+
+/* Q1 DEVICE CHECK */
+function rQ1Dev(){app.innerHTML=`<div class="card">
+  <div class="stage-badge">Question 1 of 4 · Part B</div>
+  <div class="question-text">Does this tool meet the definition of a medical device?</div>
+  <div class="question-sub">Under 21 U.S.C. §321(h), a medical device includes any software <em>intended</em> to diagnose, cure, mitigate, treat, or prevent disease or other conditions in humans. An FDA-cleared tool is not automatically cleared for use in a new population, indication, or research context outside its cleared labeling.</div>
+  <span class="reg-cite">21 U.S.C. §321(h) · FDA SaMD Framework (note: SaMD Clinical Evaluation guidance withdrawn Jan 7, 2026)</span>
+  <div class="choices">
+    <button class="choice-btn yes-style" onclick="setDev('samd')"><div class="choice-icon yes-icon">✓</div><div><div class="choice-label">Yes — this tool is a medical device (SaMD)</div><div class="choice-desc">The tool diagnoses, detects, predicts, classifies, or supports decisions about a disease or condition in specific patients</div></div></button>
+    <button class="choice-btn warn-style" onclick="setDev('cds')"><div class="choice-icon warn-icon">?</div><div><div class="choice-label">Developer claims CDS exemption — characterized as non-device</div><div class="choice-desc">Tool is described as Clinical Decision Support exempt from device regulation under FDA's January 2025 CDS guidance</div></div></button>
+    <button class="choice-btn no-style" onclick="setDev('no')"><div class="choice-icon no-icon">✗</div><div><div class="choice-label">No — clearly not a medical device</div><div class="choice-desc">Administrative software, general analytics, or a tool with no patient-specific clinical diagnostic or therapeutic function</div></div></button>
+    <button class="choice-btn info-style" onclick="setDev('unsure')"><div class="choice-icon info-icon">?</div><div><div class="choice-label">I'm not sure — help me determine this</div><div class="choice-desc">Walk through a short guided assessment to determine whether this tool likely meets the device definition</div></div></button>
+  </div>
+  ${exHTML('dev1','Cleared tool used outside its indication','An FDA-cleared AI diagnostic (510(k) for adult chest X-ray prioritization) is studied in a rural ED that includes pediatric patients. The cleared label does not follow the tool into a new population — this is an investigational use requiring IDE assessment.','Does the cleared indication specifically cover this population, care setting, and clinical use?')}
+  ${exHTML('dev2','Adaptive algorithm mid-study','An AI model continues learning during the trial. FDA\'s GMLP principles require model lock or a pre-specified PCCP. If the model kept changing, what exactly was evaluated? This likely triggers reclassification.','Is the model locked for the duration of the study, or is there a pre-specified change control plan (PCCP)?')}
+  <div class="nav-row"><button class="btn-back" onclick="back()">← Back</button></div>
+</div>`;}
+window.setDev=val=>{S.a.devicePathway=val;if(val==='samd'){S.a.isDevice=true;go('q2');}else if(val==='cds'){S.a.isDevice=null;go('q1_cds');}else if(val==='no'){S.a.isDevice=false;computeOutcome();go('result');}else{go('q1_unsure');}};
+
+/* Q1 UNSURE SUB-TREE */
+function rQ1Unsure(){
+  const a=S.a;
+  // step a: analyzes patient data?
+  if(a.unsureApd===null){app.innerHTML=`<div class="card">
+    <div class="stage-badge">Q1 · Guided Device Check · Step 1 of 3</div>
+    <div class="question-text">Does the tool analyze, process, or display data about specific individual patients or participants?</div>
+    <div class="question-sub">This includes processing EHR data, imaging data, sensor data, behavioral data, lab results, or any information tied to an individual — even if de-identified at the output stage.</div>
+    <div class="choices">
+      <button class="choice-btn yes-style" onclick="setUnsure('apd',true)"><div class="choice-icon yes-icon">✓</div><div><div class="choice-label">Yes — it processes individual patient or participant data</div></div></button>
+      <button class="choice-btn no-style" onclick="setUnsure('apd',false)"><div class="choice-icon no-icon">✗</div><div><div class="choice-label">No — it works only on aggregate or population-level data</div></div></button>
+    </div>
+    <div class="nav-row"><button class="btn-back" onclick="back()">← Back</button></div>
+  </div>`;return;}
+  // step b: clinical output?
+  if(a.unsurePco===null){app.innerHTML=`<div class="card">
+    <div class="stage-badge">Q1 · Guided Device Check · Step 2 of 3</div>
+    <div class="question-text">Does the tool produce an output used to inform, support, or drive a clinical decision about a specific patient?</div>
+    <div class="question-sub">This includes risk scores, alerts, flags, classifications, recommendations, or probability estimates related to diagnosis, treatment, monitoring, or prognosis — even if the final decision remains with a clinician.</div>
+    <div class="choices">
+      <button class="choice-btn yes-style" onclick="setUnsure('pco',true)"><div class="choice-icon yes-icon">✓</div><div><div class="choice-label">Yes — it produces a clinical output about a specific patient</div></div></button>
+      <button class="choice-btn no-style" onclick="setUnsure('pco',false)"><div class="choice-icon no-icon">✗</div><div><div class="choice-label">No — the output is for research purposes only, not for clinical decision-making</div></div></button>
+    </div>
+    <div class="nav-row"><button class="btn-back" onclick="back()">← Back</button></div>
+  </div>`;return;}
+  // step c: clinician acts?
+  app.innerHTML=`<div class="card">
+    <div class="stage-badge">Q1 · Guided Device Check · Step 3 of 3</div>
+    <div class="question-text">Is a licensed healthcare professional expected to act on the tool's output in a way that could affect patient care?</div>
+    <div class="question-sub">This includes ordering tests, adjusting treatment, escalating care, or making triage decisions based on the tool's output. If the tool's output shapes a clinician's reasoning about a specific patient, this criterion is met — even if the clinician retains override authority.</div>
+    <div class="choices">
+      <button class="choice-btn yes-style" onclick="setUnsure('cao',true)"><div class="choice-icon yes-icon">✓</div><div><div class="choice-label">Yes — clinicians are expected to act on this output in patient care</div></div></button>
+      <button class="choice-btn no-style" onclick="setUnsure('cao',false)"><div class="choice-icon no-icon">✗</div><div><div class="choice-label">No — the output is not used to inform direct patient care decisions</div></div></button>
+    </div>
+    <div class="nav-row"><button class="btn-back" onclick="back()">← Back</button></div>
+  </div>`;
+}
+window.setUnsure=(field,val)=>{
+  const a=S.a;
+  if(field==='apd'){a.unsureApd=val;if(!val){a.isDevice=false;a.devicePathway='no';computeOutcome();go('result');}else{render();}}
+  else if(field==='pco'){a.unsurePco=val;if(!val){a.isDevice=false;a.devicePathway='no';computeOutcome();go('result');}else{render();}}
+  else if(field==='cao'){a.unsureCao=val;
+    if(val){
+      // Likely device → check CDS
+      a.isDevice=null;a.devicePathway='cds';
+      app.innerHTML=`<div class="card">
+        <div class="stage-badge">Q1 · Guided Device Check · Preliminary Finding</div>
+        <div class="result-banner likely-act" style="margin-bottom:18px">
+          <div class="result-icon">🟡</div>
+          <div><div class="result-verdict" style="font-size:18px">This tool likely meets the medical device definition</div>
+          <div class="result-desc">The tool processes individual patient data, produces a clinical output, and clinicians are expected to act on it. This is consistent with FDA's SaMD definition under 21 U.S.C. §321(h).<br><br>We will now check whether the Clinical Decision Support exemption applies.</div></div>
+        </div>
+        <div class="nav-row">
+          <button class="btn-back" onclick="back()">← Back</button>
+          <button class="choice-btn info-style" style="flex:1;max-width:300px;" onclick="go('q1_cds')">
+            <div class="choice-icon q-icon">→</div><div><div class="choice-label">Check CDS exemption criteria</div></div>
+          </button>
+        </div>
+      </div>`;
+    } else {
+      a.isDevice=false;a.devicePathway='no';
+      app.innerHTML=`<div class="card">
+        <div class="stage-badge">Q1 · Guided Device Check · Preliminary Finding</div>
+        <div class="result-banner not-act" style="margin-bottom:18px">
+          <div class="result-icon">🟢</div>
+          <div><div class="result-verdict" style="font-size:18px">This tool likely does not meet the medical device definition</div>
+          <div class="result-desc">Based on your responses, the tool's output is not used to inform direct patient care decisions. This suggests it may fall outside FDA's device definition for this study context. Document this determination and consult your regulatory affairs office.<br><br>If the tool's use changes during the study, re-evaluate immediately.</div></div>
+        </div>
+        <div class="nav-row">
+          <button class="btn-back" onclick="back()">← Back</button>
+          <button class="choice-btn no-style" style="flex:1;max-width:280px;" id="toResult">
+            <div class="choice-icon no-icon">→</div><div><div class="choice-label">See full determination</div></div>
+          </button>
+        </div>
+      </div>`;
+      setTimeout(()=>{const b=document.getElementById('toResult');if(b)b.onclick=()=>{computeOutcome();go('result');};},0);
+    }
+  }
+};
+
+/* Q1 CDS CHECK */
+function rQ1CDS(){app.innerHTML=`<div class="card">
+  <div class="stage-badge">Question 1 of 4 · Part C</div>
+  <div class="question-text">Does the CDS exemption actually hold for this tool?</div>
+  <div class="question-sub">FDA's January 2025 CDS guidance exempts certain decision-support software from device classification. <strong>All four criteria below must be met.</strong> If any one fails, the tool is Software as a Medical Device — not exempt CDS.</div>
+  <span class="reg-cite">FDA CDS Guidance (Jan 2025) · 21st Century Cures Act §3060 · 21 U.S.C. §520(o)</span>
+  <ul class="check-list">
+    <li><div class="check-num">1</div><div>The software displays or analyzes <strong>patient-specific</strong> information</div></li>
+    <li><div class="check-num">2</div><div>The intended audience is a <strong>licensed healthcare professional (HCP)</strong></div></li>
+    <li><div class="check-num">3</div><div>The HCP can <strong>independently review the basis</strong> for the recommendation — using the underlying data alone, without needing the algorithm's output to reach the same conclusion</div></li>
+    <li><div class="check-num">4</div><div>The software is intended to <strong>support</strong> independent HCP review — not to replace or override clinical judgment</div></li>
+  </ul>
+  <p style="font-size:13px;color:var(--gray-mid);margin-bottom:18px;font-style:italic;">The critical test for Criterion 3: If the clinician needs the algorithm's recommendation — not just the raw underlying data — to know that a patient needs intervention, the exemption does not hold.</p>
+  <div class="choices">
+    <button class="choice-btn yes-style" onclick="setCDS(true)"><div class="choice-icon yes-icon">✓</div><div><div class="choice-label">All four criteria are met — CDS exemption holds</div><div class="choice-desc">The HCP can fully and independently reach the same conclusion using the underlying data, without relying on the algorithm's output</div></div></button>
+    <button class="choice-btn warn-style" onclick="setCDS(false)"><div class="choice-icon warn-icon">✗</div><div><div class="choice-label">One or more criteria fail — CDS exemption does NOT hold</div><div class="choice-desc">The tool is SaMD and device regulations apply</div></div></button>
+  </div>
+  ${exHTML('cds-fail','Sepsis alert tool — exemption fails','An ICU sepsis early warning tool synthesizes 40+ EHR variables into a risk score. Even with an explanatory dashboard, the clinician cannot independently reproduce the risk stratification from the raw data. They need the score to know who is at elevated risk. Criterion 3 fails. The tool is SaMD.','Can the attending physician, without seeing the risk score, identify which patients need sepsis intervention using only the raw data elements the dashboard displays?')}
+  ${exHTML('cds-holds','Lab reference tool — exemption holds','A nephrology CDS tool displays a patient\'s creatinine trend over 72 hours and flags when values exceed a clinical guideline cutoff. The nephrologist can look directly at the creatinine values, apply the published threshold from memory, and reach the exact same conclusion without the flag. The algorithm adds convenience and display — not the clinical signal. All four CDS criteria are met.','Can the clinician reach the same clinical conclusion using only the raw data values, without the algorithm\'s synthesis or recommendation?',true)}
+  <div class="nav-row"><button class="btn-back" onclick="back()">← Back</button></div>
+</div>`;}
+window.setCDS=holds=>{S.a.cdsExemptionHolds=holds;S.a.isDevice=!holds;if(holds){computeOutcome();go('result');}else{go('q2');}};
+
+/* Q2 CLINICAL EVALUATION */
+function rQ2(){app.innerHTML=`<div class="card">
+  <div class="stage-badge">Question 2 of 4</div>
+  <div class="question-text">Is the tool the focus of this study?</div>
+  <div class="question-sub">This question asks whether the study is a <strong>clinical evaluation of the tool's performance</strong> — or whether the tool is simply being used as a means to conduct a study about something else. A study may be a clinical evaluation even when there is no explicit "intervention" applied to participants. Evaluating a tool's diagnostic accuracy, alert calibration, or risk score performance is still a clinical evaluation of the tool.</div>
+  <span class="reg-cite">21 CFR 812.3(h) · 21 CFR 812.2 · FDA IDE Regulation</span>
+  <div class="choices">
+    <button class="choice-btn yes-style" onclick="setEval(true)"><div class="choice-icon yes-icon">✓</div><div><div class="choice-label">Yes — the tool is the focus of this study</div><div class="choice-desc">The study is designed to evaluate the tool's performance, accuracy, safety, clinical impact, or adoption</div></div></button>
+    <button class="choice-btn no-style" onclick="setEval(false)"><div class="choice-icon no-icon">✗</div><div>
+      <div class="choice-label">No — the tool is used during the study but is not the focus</div>
+      <div class="choice-desc">The tool is a cleared device used per its labeling in standard practice; the study is about something else</div>
+      <div class="choice-warn">⚠️ Be prepared to provide documentation supporting this finding. Acceptable documentation includes: FDA clearance letter or 510(k) summary, manufacturer's labeling or brochure, IRB determination memo, or a written regulatory affairs assessment confirming cleared use per indication.</div>
+    </div></button>
+  </div>
+  ${exHTML('q2a','Workflow study that is actually a device evaluation','A study tracking "alert fatigue rates and time-to-intervention for sepsis-positive cases" when using an AI sepsis tool is measuring whether the AI alert changed how fast clinicians intervened. That is a clinical evaluation of the tool\'s performance — not a study about something else.','Are your primary endpoints measuring something about the tool\'s performance, outputs, or clinical impact — rather than a question that is independent of the tool?')}
+  <div class="nav-row"><button class="btn-back" onclick="back()">← Back</button></div>
+</div>`;}
+window.setEval=val=>{S.a.isEvaluation=val;if(!val){computeOutcome();go('result');}else{go('q3_site');}};
+
+/* Q3 SITE */
+function rQ3Site(){app.innerHTML=`<div class="card">
+  <div class="stage-badge">Question 3 of 4 · Part A</div>
+  <div class="question-text">Does the study have at least one US-based site?</div>
+  <div class="question-sub">FDAAA §801 ACT registration applies only to studies with at least one qualifying site in the United States. Purely international studies are not ACTs under FDAAA, though they may have registration obligations in other jurisdictions (EU CTR, WHO ICTRP).</div>
+  <span class="reg-cite">FDAAA §801 · 42 U.S.C. §282(j)(1)(A)</span>
+  <div class="choices">
+    <button class="choice-btn yes-style" onclick="setSite(true)"><div class="choice-icon yes-icon">✓</div><div><div class="choice-label">Yes — at least one US site</div><div class="choice-desc">Study conducted at a US hospital, clinic, academic medical center, or other US-based location</div></div></button>
+    <button class="choice-btn no-style" onclick="setSite(false)"><div class="choice-icon no-icon">✗</div><div><div class="choice-label">No — purely international, no US sites</div><div class="choice-desc">No US sites involved in participant enrollment or data collection</div></div></button>
+  </div>
+  <div class="nav-row"><button class="btn-back" onclick="back()">← Back</button></div>
+</div>`;}
+window.setSite=val=>{S.a.usaSite=val;if(!val){computeOutcome();go('result');}else{go('q3_ide');}};
+
+/* Q3 IDE CATEGORY */
+function rQ3IDE(){app.innerHTML=`<div class="card">
+  <div class="stage-badge">Question 3 of 4 · Part B</div>
+  <div class="question-text">What is the IDE regulatory category for this study?</div>
+  <div class="question-sub">These are <strong>four distinct categories</strong> — not a spectrum. Selecting the correct category is critical: NSR studies still carry IDE status and are still subject to FDAAA §801 ACT registration. If unsure, document your analysis and consult your regulatory affairs office or FDA's DICE.</div>
+  <span class="reg-cite">21 CFR 812.2 · 21 CFR 812.3 · 21 CFR 812.20 · FDAAA §801(a)</span>
+  <div class="info-box"><strong>⚠️ NSR ≠ IDE-exempt — these are different categories</strong>Non-Significant Risk (NSR) device studies require an <em>abbreviated IDE</em> overseen by the IRB — they still carry IDE status. IDE-exempt is a separate category with its own specific criteria under 21 CFR 812.2(c). Being NSR does not make a study IDE-exempt.</div>
+  <div class="choices">
+    <button class="choice-btn warn-style" onclick="setIDE('sr')"><div class="choice-icon warn-icon">SR</div><div>
+      <div class="choice-label">Significant Risk (SR) — full IDE required</div>
+      <div class="choice-desc">FDA or IRB has determined this is a significant risk device investigation. Full IDE application submitted to and approved by FDA. Applies to devices presenting serious risk to health, safety, or welfare of participants. Study is subject to FDAAA §801 registration.</div>
+    </div></button>
+    <button class="choice-btn yes-style" onclick="setIDE('nsr')"><div class="choice-icon yes-icon">NSR</div><div>
+      <div class="choice-label">Non-Significant Risk (NSR) — abbreviated IDE, IRB as IDE authority</div>
+      <div class="choice-desc">IRB has determined the device is NSR. No FDA IDE application required — the IRB serves as the IDE authority under 21 CFR 812.2(b). NSR studies still carry IDE status and remain subject to FDAAA §801 ACT registration requirements. IRB's NSR determination must be formally documented.</div>
+    </div></button>
+    <button class="choice-btn no-style" onclick="setIDE('exempt')"><div class="choice-icon no-icon">EX</div><div>
+      <div class="choice-label">IDE-exempt — meets a specific 21 CFR 812.2(c) exemption category</div>
+      <div class="choice-desc">Study meets one of the specific exemption criteria under 21 CFR 812.2(c): e.g., a cleared device used per its labeling in standard practice; a diagnostic device where results do not determine treatment; a device used in research that poses no significant risk. Exemption basis must be formally documented.</div>
+    </div></button>
+    <button class="choice-btn info-style" onclick="setIDE('nd')"><div class="choice-icon info-icon">ND</div><div>
+      <div class="choice-label">Non-device / CDS-exempt — IDE framework does not apply</div>
+      <div class="choice-desc">The tool has been determined to meet the CDS exemption or otherwise does not meet the device definition. IDE regulations are inapplicable. Document this finding.</div>
+    </div></button>
+  </div>
+  ${exHTML('ide1','The NSR documentation gap','A study uses an AI diagnostic outside its cleared indication. The PI assumes IDE-exempt because "we\'re not doing anything invasive." The IRB never formally reviewed the IDE category and no documentation exists. The compliance failure is not the determination — it\'s the missing documentation.','Has the IRB formally reviewed and documented the IDE category (SR, NSR, or exempt) for this study, and is that determination in the study file?')}
+  <div class="nav-row"><button class="btn-back" onclick="back()">← Back</button></div>
+</div>`;}
+window.setIDE=val=>{S.a.ideCategory=val;computeOutcome();go('result');};
+
+/* OUTCOME LOGIC */
+function computeOutcome(){
+  const a=S.a;
+  if(a.isDevice===false){S.outcome={type:'not-act',reason:'not-device'};return;}
+  if(a.devicePathway==='cds'&&a.cdsExemptionHolds===true){S.outcome={type:'not-act',reason:'cds-exempt'};return;}
+  if(a.isEvaluation===false){S.outcome={type:'not-act',reason:'not-eval'};return;}
+  if(a.usaSite===false){S.outcome={type:'not-act',reason:'no-us'};return;}
+  if(a.ideCategory==='sr'){S.outcome={type:'act',reason:'sr'};return;}
+  if(a.ideCategory==='nsr'){S.outcome={type:'act',reason:'nsr'};return;}
+  if(a.ideCategory==='exempt'){S.outcome={type:'likely-act',reason:'exempt'};return;}
+  if(a.ideCategory==='nd'){S.outcome={type:'not-act',reason:'nd'};return;}
+  S.outcome={type:'indeterminate',reason:'incomplete'};
+}
+
+/* RESULT */
+function rResult(){
+  const a=S.a;
+  const o=S.outcome||{type:'indeterminate',reason:'incomplete'};
+  const cfgs={
+    act:{icon:'🔴',css:'act',verdict:'Applicable Clinical Trial',desc:'This study meets the FDAAA §801 definition of an Applicable Clinical Trial. ClinicalTrials.gov registration is required within 21 days of first participant enrollment. Results reporting is required within 12 months of primary completion date.'},
+    'likely-act':{icon:'🟡',css:'likely-act',verdict:'Likely Applicable Clinical Trial',desc:'This study has characteristics consistent with an ACT. IDE-exempt status does not remove the registration obligation — FDAAA §801 captures studies that would require an IDE absent a specific 21 CFR 812.2(c) exemption. Confirm with institutional counsel and consider voluntary registration if any uncertainty remains.'},
+    'not-act':{icon:'🟢',css:'not-act',verdict:'Likely Not an Applicable Clinical Trial',desc:'Based on your responses, this study does not appear to meet the FDAAA §801 ACT definition via the device pathway. Document this determination and the basis for each decision point. If any aspect of the study changes — intended use, population, IDE category, or design — re-evaluate immediately.'},
+    indeterminate:{icon:'🔵',css:'indeterminate',verdict:'Cannot Determine Without Further Analysis',desc:"Insufficient information to make a determination. Consult FDA's Division of Industry and Consumer Education (DICE) at 1-800-835-4709 for informal device guidance, and OHRP for human subjects questions. Consider voluntary registration as risk management."},
+  };
+  const c=cfgs[o.type];
+
+  const nsMap={
+    sr:['Register on ClinicalTrials.gov within 21 days of first participant enrollment','Report results within 12 months of primary completion date','Confirm FDA IDE approval is on file','Verify IRB approval under 21 CFR 56 in addition to 45 CFR 46','Confirm informed consent under 21 CFR 50','Ensure model is locked or governed by a pre-specified PCCP'],
+    nsr:['Register on ClinicalTrials.gov within 21 days of first enrollment — NSR status does not remove this obligation','Report results within 12 months of primary completion date','Confirm IRB has formally documented the NSR determination and is serving as IDE authority per 21 CFR 812.2(b)','Confirm abbreviated IDE requirements are being met','Ensure model lock or pre-specified change control plan is documented'],
+    exempt:['Formally document the specific 21 CFR 812.2(c) exemption category and the basis for the determination in the study file','Consult institutional counsel on whether FDAAA §801 registration is triggered despite IDE exemption','Consider voluntary registration to protect against reclassification disputes','Build a re-evaluation trigger into the protocol — if intended use or design changes, re-assess the exemption'],
+    'not-device':['Document the intended use analysis and device determination in writing','Retain documentation in the study file for audit purposes','If the tool is later used in a clinical context or intended use expands, re-evaluate SaMD status','Consult the TechInHSR AI Medical Device Classification Tool for deeper analysis if needed'],
+    'cds-exempt':['Document the four CDS exemption criteria analysis formally — one finding per criterion','Confirm with regulatory counsel that all four FDA criteria are met for this specific tool and population','If intended use changes or the tool is updated, repeat the CDS exemption analysis','The CDS analysis must be conducted separately for any new population or care setting'],
+    'not-eval':['Document that this is not a clinical evaluation of the tool — specify the basis','Provide supporting documentation: FDA clearance letter or 510(k) summary, manufacturer\'s labeling or brochure, IRB determination memo, or written regulatory affairs assessment confirming cleared use per indication','Re-evaluate if the study design changes to collect systematic performance data on the tool'],
+    'no-us':['Document the absence of US sites as the basis for FDAAA non-applicability','Evaluate whether other jurisdictions require registration (EU CTR, WHO ICTRP, etc.)','Re-evaluate if a US site is added at any point during the study'],
+    nd:['Document the CDS exemption or non-device determination formally in the study file','Confirm this determination is consistent with FDA\'s January 2025 CDS guidance','Re-evaluate if the tool\'s function, output, or intended use changes'],
+    incomplete:["Consult FDA's DICE for informal guidance: 1-800-835-4709",'Consult OHRP for human subjects questions','Document the regulatory uncertainty and steps taken to resolve it','Consider voluntary registration as risk management','Review the TechInHSR AI Medical Device Classification Tool for SaMD determination support'],
+  };
+  const steps=nsMap[o.reason]||nsMap.incomplete;
+
+  const iuSummary=([a.toolName,a.toolFunction,a.toolInput,a.toolOutput,a.toolUser,a.toolPopulation,a.toolSetting].some(Boolean))
+    ?`${a.toolName||'[Tool]'} is designed to ${a.toolFunction||'[function]'}. Input: ${a.toolInput||'[input]'}. Output: ${a.toolOutput||'[output]'}. Intended user: ${a.toolUser||'[user]'}. Population: ${a.toolPopulation||'[population]'}. Setting: ${a.toolSetting||'[setting]'}.`
+    :'(not provided)';
+
+  const devLabel=a.devicePathway==='samd'?'Yes — SaMD / medical device'
+    :a.devicePathway==='cds'?(a.cdsExemptionHolds?'No (CDS exemption holds)':'Yes (CDS exemption fails → SaMD)')
+    :a.devicePathway==='no'?'No — not a medical device'
+    :a.devicePathway==='unsure'?(a.isDevice===false?'No (guided assessment — output not used in patient care)':'Yes (guided assessment — likely SaMD)')
+    :'—';
+
+  const ideLabel=a.ideCategory==='sr'?'Significant Risk — full IDE required'
+    :a.ideCategory==='nsr'?'Non-Significant Risk — abbreviated IDE (IRB as IDE authority)'
+    :a.ideCategory==='exempt'?'IDE-exempt (21 CFR 812.2(c)) — basis must be documented'
+    :a.ideCategory==='nd'?'Non-device / CDS-exempt — IDE not applicable'
+    :'N/A';
+
+  const q4ans=o.type==='act'?'YES':o.type==='likely-act'?'LIKELY YES':o.type==='not-act'?'NO':'INDETERMINATE';
+  const qrows=[
+    {n:'1',t:'Does the tool meet the medical device (SaMD) definition?',v:devLabel},
+    {n:'2',t:'Is the tool the focus of this study (clinical evaluation)?',v:a.isEvaluation===null?'N/A':a.isEvaluation?'Yes':'No'},
+    {n:'3a',t:'At least one US-based site?',v:a.usaSite===null?'N/A':a.usaSite?'Yes':'No'},
+    {n:'3b',t:'IDE regulatory category',v:ideLabel},
+    {n:'4',t:'Applicable Clinical Trial under FDAAA §801?',v:q4ans},
+  ];
+
+  const beshNote=a.beshDesignated?`<div class="besh-warning" style="margin-bottom:16px"><div class="besh-warning-title">⚠️ BESH designation noted</div><p>This study was designated as BESH under NIH NOT-OD-26-032. That NIH designation does not override FDA device obligations. The determination above reflects the independent FDAAA §801 analysis.</p></div>`:'';
+
+  app.innerHTML=`
+  <div class="result-banner ${c.css}">
+    <div class="result-icon">${c.icon}</div>
+    <div><div class="result-verdict">${c.verdict}</div><div class="result-desc">${c.desc}</div></div>
+  </div>
+  ${beshNote}
+  <div class="memo-card">
+    <div class="memo-header">
+      <div class="memo-header-title">ACT Determination Documentation Memo</div>
+      <div class="memo-header-sub">Generated by TechInHSR ACT Decision Tool · ${new Date().toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'})}</div>
+    </div>
+    <div class="memo-body">
+      <div class="memo-section">
+        <div class="memo-section-title">Study Information</div>
+        <div class="memo-field"><div class="memo-field-label">Protocol Title</div><div class="memo-field-val">${a.studyName||'(not provided)'}</div></div>
+        <div class="memo-field"><div class="memo-field-label">Principal Investigator</div><div class="memo-field-val">${a.piName||'(not provided)'}</div></div>
+        <div class="memo-field"><div class="memo-field-label">Institution</div><div class="memo-field-val">${a.institution||'(not provided)'}</div></div>
+        <div class="memo-field"><div class="memo-field-label">Study Description</div><div class="memo-field-val">${a.studyDesc||'(not provided)'}</div></div>
+        <div class="memo-field"><div class="memo-field-label">NIH Funded</div><div class="memo-field-val">${a.nihFunded===true?'Yes':a.nihFunded===false?'No':'Not specified'}</div></div>
+        ${a.nihFunded?`<div class="memo-field"><div class="memo-field-label">BESH Designation</div><div class="memo-field-val">${a.beshDesignated?'Yes — designated BESH (does not override FDA analysis below)':'No / Not applicable'}</div></div>`:''}
+      </div>
+      <div class="memo-section">
+        <div class="memo-section-title">Intended Use Statement</div>
+        <div class="memo-field-val" style="font-size:13px;line-height:1.7">${iuSummary}</div>
+      </div>
+      <div class="memo-section">
+        <div class="memo-section-title">Decision Framework — Question-by-Question</div>
+        ${qrows.map(r=>{const ac=r.v.startsWith('Yes')||r.v==='YES'?'ans-yes':r.v.startsWith('No')||r.v==='NO'?'ans-no':'ans-partial';return`<div class="memo-q-row"><div class="memo-q-num">${r.n}</div><div class="memo-q-text">${r.t}</div><div class="memo-q-ans ${ac}">${r.v}</div></div>`;}).join('')}
+      </div>
+      <div class="memo-section">
+        <div class="memo-section-title">Overall Determination</div>
+        <div class="memo-field"><div class="memo-field-label">Result</div><div class="memo-field-val"><strong>${c.verdict}</strong></div></div>
+        <div class="memo-field"><div class="memo-field-label">Basis</div><div class="memo-field-val">${c.desc}</div></div>
+      </div>
+      <div class="memo-section">
+        <div class="memo-section-title">Recommended Next Steps</div>
+        <ul class="next-steps-list">${steps.map((s,i)=>`<li><div class="ns-bullet">${i+1}</div><div>${s}</div></li>`).join('')}</ul>
+      </div>
+      <div class="memo-section">
+        <div class="memo-section-title">Disclaimer</div>
+        <div class="memo-field-val" style="font-size:12px;color:var(--gray-mid);line-height:1.6">This memo was generated using the TechInHSR ACT Determination Tool and reflects preliminary structured guidance only. It does not constitute legal advice. The final ACT determination must be made by your IRB, regulatory affairs office, or legal counsel. Regulatory citations are current as of May 2026. For informal FDA device guidance: DICE at 1-800-835-4709. For human subjects questions: OHRP. Developed by Tamiko Eto, MA, CIP · TechInHSR LLC · CC BY-NC 4.0.</div>
+      </div>
+    </div>
+  </div>
+  <div class="nav-row">
+    <button class="print-btn" onclick="window.print()">🖨 Print / Save as PDF</button>
+    <button class="btn-restart" onclick="restart()">↺ New assessment</button>
+    <button class="btn-back" onclick="back()">← Back</button>
+  </div>`;
+}
+
+render();
+</script>
+</body>
+</html>
