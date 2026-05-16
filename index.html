@@ -164,8 +164,8 @@
 
 <script>
 const app=document.getElementById('app');
-const STEPS=['intro','intake','nih_check','besh_warning','q1_iu','q1_dev','q1_unsure','q1_cds','q2','q3_site','q3_ide','result'];
-const STEP_LABELS={intro:'Introduction',intake:'Study information',nih_check:'Funding check',besh_warning:'BESH flag',q1_iu:'Q1 · Intended use',q1_dev:'Q1 · Device status',q1_unsure:'Q1 · Guided device check',q1_cds:'Q1 · CDS exemption',q2:'Q2 · Clinical evaluation',q3_site:'Q3 · US site',q3_ide:'Q3 · IDE category',result:'Determination'};
+const STEPS=['intro','intake','nih_check','besh_warning','track2_intro','q1_iu','q1_dev','q1_unsure','q1_cds','q2','q3_site','q3_ide','result'];
+const STEP_LABELS={intro:'Introduction',intake:'Study information',nih_check:'Funding check',besh_warning:'BESH flag',track2_intro:'Track 2 · FDA jurisdiction',q1_iu:'Q1 · Intended use',q1_dev:'Q1 · Device status',q1_unsure:'Q1 · Guided device check',q1_cds:'Q1 · CDS exemption',q2:'Q2 · Clinical evaluation',q3_site:'Q3 · US site',q3_ide:'Q3 · IDE category',result:'Determination'};
 
 function blankState(){return{step:'intro',history:[],a:{studyName:'',piName:'',institution:'',studyDesc:'',nihFunded:null,beshDesignated:null,toolName:'',toolFunction:'',toolInput:'',toolOutput:'',toolUser:'',toolPopulation:'',toolSetting:'',devicePathway:null,isDevice:null,cdsExemptionHolds:null,unsureApd:null,unsurePco:null,unsureCao:null,isEvaluation:null,usaSite:null,ideCategory:null},outcome:null};}
 let S=blankState();
@@ -208,9 +208,9 @@ function mlPreview(a){
 
 function render(){
   setProgress(S.step);
-  ({intro:rIntro,intake:rIntake,nih_check:rNih,besh_warning:rBesh,q1_iu:rQ1IU,q1_dev:rQ1Dev,q1_unsure:rQ1Unsure,q1_cds:rQ1CDS,q2:rQ2,q3_site:rQ3Site,q3_ide:rQ3IDE,result:rResult}[S.step]||rIntro)();
+  ({intro:rIntro,intake:rIntake,nih_check:rNih,besh_warning:rBesh,track2_intro:rTrack2Intro,q1_iu:rQ1IU,q1_dev:rQ1Dev,q1_unsure:rQ1Unsure,q1_cds:rQ1CDS,q2:rQ2,q3_site:rQ3Site,q3_ide:rQ3IDE,result:rResult}[S.step]||rIntro)();
 }
-
+  
 /* INTRO */
 function rIntro(){app.innerHTML=`<div class="card">
   <div class="stage-badge">ACT Determination Tool</div>
@@ -260,7 +260,7 @@ function rBesh(){app.innerHTML=`<div class="card">
   <div class="stage-badge">BESH Classification Check</div>
   <div class="question-text">Has this study been classified as BESH by NIH?</div>
   <div class="question-sub">Under NOT-OD-26-032 (effective May 25, 2026), Basic Experimental Studies with Humans are no longer considered clinical trials by NIH and do not require ClinicalTrials.gov registration under <em>NIH policy</em>. That classification does <strong>not</strong> override FDA device regulations.</div>
-  <div class="besh-warning"><div class="besh-warning-title">⚠️ Critical distinction</div><p>If the AI or software tool meets FDA's Software as a Medical Device definition, 21 CFR 812 (IDE regulations) and FDAAA §801 registration requirements apply <strong>regardless</strong> of the NIH BESH designation. FDA and NIH operate on entirely independent regulatory tracks.</p></div>
+  <div class="besh-warning"><div class="besh-warning-title">⚠️ Important: BESH is a NIH policy designation that affects your obligations under NIH funding requirements only. It has no effect on FDA requirements. If this study involves an AI tool that meets FDA's medical device or drug definition, 21 CFR and FDAAA §801 registration requirements may still apply, regardless of BESH status. Answer the next questions to assess your FDA obligations separately.</p></div>
   <div class="choices">
     <button class="choice-btn warn-style" onclick="setBesh(true)"><div class="choice-icon warn-icon">!</div><div><div class="choice-label">Yes — designated as BESH</div><div class="choice-desc">PI or institution has characterized this as a Basic Experimental Study with Humans under NIH NOT-OD-26-032</div></div></button>
     <button class="choice-btn no-style" onclick="setBesh(false)"><div class="choice-icon no-icon">→</div><div><div class="choice-label">No / Unsure</div><div class="choice-desc">Not designated BESH, or BESH status is unknown</div></div></button>
@@ -268,8 +268,34 @@ function rBesh(){app.innerHTML=`<div class="card">
   ${exHTML('besh1','BESH + industry co-investigator trap','A neuroscience PI designates an AI depression-monitoring study as BESH. The digital health company co-investigator holds data rights and has a regulatory submission in planning. NIH accepted the BESH framing. FDA evaluated the study based on how the data would be used — not the PI\'s characterization.','What rights does the industry partner hold to the trained model or dataset? Does the partner have a regulatory pathway underway?')}
   <div class="nav-row"><button class="btn-back" onclick="back()">← Back</button></div>
 </div>`;}
-window.setBesh=val=>{S.a.beshDesignated=val;go('q1_iu');};
+window.setBesh=val=>{S.a.beshDesignated=val;go('track2_intro');};
 
+/* TRACK 2 INTRO */
+function rTrack2Intro(){
+  const a=S.a;
+  const nihSummary = a.nihFunded
+    ? (a.beshDesignated
+        ? `<div style="background:var(--green-light);border:1.5px solid var(--green);border-radius:8px;padding:14px 18px;margin-bottom:18px;font-size:13px;color:#1B5E20;line-height:1.6"><strong style="display:block;margin-bottom:4px;font-size:11px;text-transform:uppercase;letter-spacing:0.5px">Track 1 Result — NIH Funding</strong>This study is NIH-funded and has been designated BESH. Under NOT-OD-26-032, NIH does not classify this as a clinical trial — meaning NIH-specific requirements (GCP training, DSMP, clinical trial-only FOA restrictions, NIH results reporting) do not apply under Track 1. <strong>Track 1 is resolved.</strong></div>`
+        : `<div style="background:var(--amber-light);border:1.5px solid var(--amber);border-radius:8px;padding:14px 18px;margin-bottom:18px;font-size:13px;color:#7B3F00;line-height:1.6"><strong style="display:block;margin-bottom:4px;font-size:11px;text-transform:uppercase;letter-spacing:0.5px">Track 1 Status — NIH Funding</strong>This study is NIH-funded and has not been designated BESH. NIH clinical trial requirements may apply under Track 1 depending on whether this study meets NIH's clinical trial definition. Consult your NIH program officer and institutional grants office to confirm Track 1 obligations independently of this tool. <strong>This tool now assesses Track 2 only.</strong></div>`)
+    : `<div style="background:var(--teal-light);border:1px solid var(--teal-mid);border-radius:8px;padding:14px 18px;margin-bottom:18px;font-size:13px;color:var(--teal);line-height:1.6"><strong style="display:block;margin-bottom:4px;font-size:11px;text-transform:uppercase;letter-spacing:0.5px">Track 1 — Not Applicable</strong>This study is not NIH-funded. Track 1 NIH obligations — including BESH — do not apply. This tool assesses Track 2 FDA jurisdiction only.</div>`;
+
+  app.innerHTML=`<div class="card">
+  <div class="stage-badge">Track 2 · FDA Jurisdiction</div>
+  <div class="question-text">Now we assess Track 2 — FDA jurisdiction</div>
+  <div class="question-sub">ClinicalTrials.gov registration obligations arise from two completely independent tracks. Track 1 (NIH policy) has been addressed above. Track 2 is governed by <strong>federal law — FDAAA §801</strong> — and applies to any study evaluating an FDA-regulated medical device, regardless of funding source. BESH status, NIH classification, and Track 1 outcomes have no effect on Track 2 obligations.</div>
+  ${nihSummary}
+  <div style="background:var(--teal-pale);border-left:3px solid var(--gold);padding:14px 18px;border-radius:0 6px 6px 6px;margin-bottom:20px;font-size:13px;color:var(--gray-dark);line-height:1.6">
+    <strong style="color:var(--teal)">Track 2 asks one threshold question:</strong> Does this study evaluate an FDA-regulated medical device — and if so, does it meet the FDAAA §801 Applicable Clinical Trial definition? To answer that, we first need to establish the intended use of the AI tool. Everything in Track 2 flows from that.
+  </div>
+  <div class="choices">
+    <button class="choice-btn info-style" onclick="go('q1_iu')">
+      <div class="choice-icon q-icon">→</div>
+      <div><div class="choice-label">Begin Track 2 assessment</div><div class="choice-desc">Establish intended use, then work through the FDA device and ACT determination</div></div>
+    </button>
+  </div>
+  <div class="nav-row"><button class="btn-back" onclick="back()">← Back</button></div>
+</div>`;}
+  
 /* Q1 INTENDED USE — MAD-LIB */
 function rQ1IU(){const a=S.a;app.innerHTML=`<div class="card">
   <div class="stage-badge">Question 1 of 4 · Part A</div>
@@ -535,16 +561,24 @@ function rResult(){
     :a.ideCategory==='nd'?'Non-device / CDS-exempt — IDE not applicable'
     :'N/A';
 
-  const q4ans=o.type==='act'?'YES':o.type==='likely-act'?'LIKELY YES':o.type==='not-act'?'NO':'INDETERMINATE';
+  const track1Row = a.nihFunded ? [{
+    n:'T1',
+    t:'Track 1 — NIH funding obligations (independent of Track 2)',
+    v: a.beshDesignated
+      ? 'BESH designated — NIH clinical trial requirements not applicable under NOT-OD-26-032'
+      : 'NIH-funded, not BESH — confirm NIH clinical trial obligations separately with program officer'
+  }] : [];
+
   const qrows=[
-    {n:'1',t:'Does the tool meet the medical device (SaMD) definition?',v:devLabel},
-    {n:'2',t:'Is the tool the focus of this study (clinical evaluation)?',v:a.isEvaluation===null?'N/A':a.isEvaluation?'Yes':'No'},
-    {n:'3a',t:'At least one US-based site?',v:a.usaSite===null?'N/A':a.usaSite?'Yes':'No'},
-    {n:'3b',t:'IDE regulatory category',v:ideLabel},
-    {n:'4',t:'Applicable Clinical Trial under FDAAA §801?',v:q4ans},
+    ...track1Row,
+    {n:'1',t:'Track 2 — Does the tool meet the medical device (SaMD) definition?',v:devLabel},
+    {n:'2',t:'Track 2 — Is the tool the focus of this study (clinical evaluation)?',v:a.isEvaluation===null?'N/A':a.isEvaluation?'Yes':'No'},
+    {n:'3a',t:'Track 2 — At least one US-based site?',v:a.usaSite===null?'N/A':a.usaSite?'Yes':'No'},
+    {n:'3b',t:'Track 2 — IDE regulatory category',v:ideLabel},
+    {n:'4',t:'Track 2 — Applicable Clinical Trial under FDAAA §801?',v:q4ans},
   ];
 
-  const beshNote=a.beshDesignated?`<div class="besh-warning" style="margin-bottom:16px"><div class="besh-warning-title">⚠️ BESH designation noted</div><p>This study was designated as BESH under NIH NOT-OD-26-032. That NIH designation does not override FDA device obligations. The determination above reflects the independent FDAAA §801 analysis.</p></div>`:'';
+  const beshNote=a.beshDesignated?`<div class="besh-warning" style="margin-bottom:16px"><div class="besh-warning-title">⚠️ BESH designation noted</div><p>This study was designated as BESH under NIH NOT-OD-26-032, which affects NIH obligations only. BESH designation has no effect on the FDA jurisdiction analysis. The determination above reflects the independent FDAAA §801 FDA jurisdiction analysis. If the study is not a clinical study about an FDA-regulated drug or device, FDA Jurisdiction analysis does not apply — but that conclusion must be reached through the determination tool, not assumed from BESH status.</p></div>`:'';
 
   app.innerHTML=`
   <div class="result-banner ${c.css}">
@@ -572,7 +606,7 @@ function rResult(){
         <div class="memo-field-val" style="font-size:13px;line-height:1.7">${iuSummary}</div>
       </div>
       <div class="memo-section">
-        <div class="memo-section-title">Decision Framework — Question-by-Question</div>
+        <div class="memo-section-title">Decision Framework — Two-Track Analysis</div>
         ${qrows.map(r=>{const ac=r.v.startsWith('Yes')||r.v==='YES'?'ans-yes':r.v.startsWith('No')||r.v==='NO'?'ans-no':'ans-partial';return`<div class="memo-q-row"><div class="memo-q-num">${r.n}</div><div class="memo-q-text">${r.t}</div><div class="memo-q-ans ${ac}">${r.v}</div></div>`;}).join('')}
       </div>
       <div class="memo-section">
